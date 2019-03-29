@@ -1,8 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#apt-get install python-matplotlib
-#apt-get install python-sciscipy
-#apt-get install python-scipy
 import numpy as np
 
 from generic import *
@@ -63,10 +60,10 @@ def split_stat_line(line):
     return i,e,v
 
 
-def local_search(algo, max_iter, screen=True) :
+def run_algorithm(algo, max_iter, screen=True) :
     """
-    Lance une instance d'un algorithme de recherche local et retourne
-    ses resultas .
+    Lance une instance d'un algorithme de recherche et retourne
+    ses resultas.
 
     prend :
        algo : une instance de la classe Algorithme
@@ -145,15 +142,12 @@ def multiple_runs(problem, algo_class_name,  max_iter, nb_runs, alg_options):
 
     for r in xrange(nb_runs) :
 
-        # générer une solution initiale aléatoire
-        s0 = problem.generate_initial_solution(sol_type='random')
-
         # instancier un algorithme avec le problem et la solution initial
-        algorithm = algo_class_name( problem, s0, alg_options )
+        algorithm = algo_class_name( problem, alg_options )
         problem.reset()
 
         # exécuter l'algorithme jusqua la fin et récupérer ses stats
-        it , iter_stats = local_search(algorithm, max_iter, screen=True)
+        it , iter_stats = run_algorithm(algorithm, max_iter, screen=True)
         iter_data.append( iter_stats )
 
         # recuperons et affichons les stats de fin
@@ -183,15 +177,21 @@ def multiple_runs(problem, algo_class_name,  max_iter, nb_runs, alg_options):
 if __name__ == '__main__':
 
     # paramètre globaus, a modifier selon taille des problèmes
+    #small - medium - large
     probleme_size   = 'small'
 
-    max_evaluations = 1000 # Les critère d'arrêt
-    max_iterations  = 1000
+    max_evaluations = 3000 # Les critère d'arrêt
+    max_iterations  = 3000
 
     nb_runs         = 30   # le nombre d'exécution de chaque algorithme
 
     # paramètre pour les algorithmes
-    algo_options = {   }
+    algo_options = {
+        'mu' : 10,
+        'lambda' : 20,
+        'Pc' : .8,
+        'Pm' : .4,
+    }
 
     # la liste des algorithmes (le nom des classes)
     algo_list = [
@@ -201,9 +201,9 @@ if __name__ == '__main__':
     ]
 
     # Générer un problème
-    #prob = generate_knapsac_instance( probleme_size, max_evaluations)
+    prob = generate_knapsac_instance( probleme_size, max_evaluations)
     #prob = generate_set_covering_instance( probleme_size, max_evaluations)
-    prob = generate_tsp_instance( probleme_size, max_evaluations, size=20)
+    #prob = generate_tsp_instance( probleme_size, max_evaluations, size=20)
 
     #prob = generate_onemax_instance( probleme_size, max_evaluations)
     #prob = generate_leading_ones_instance( probleme_size, max_evaluations)

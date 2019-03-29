@@ -136,13 +136,11 @@ def plot_boxplot(axes, data_stuff, labels=[]):
     pad=abs(y_max-y_min)*0.6
     axes.set_ylim([y_min-pad, y_max+pad])
       
-    bp = axes.boxplot(data_stuff)
+    bp = axes.boxplot(data_stuff, showmeans=True, labels=labels)
 
     # manage the colors list is given (when box order is changed)
     color_list = \
-        plt.rcParams['axes.color_cycle'][:len(data_stuff)]
-
-    ticknames = plt.setp(axes, xticklabels=labels)
+        plt.rcParams['axes.prop_cycle'].by_key()['color'][:len(data_stuff)]
 
     # draw the boxes 
     for i in range(0, len(bp['boxes'])) :

@@ -1,14 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
+
 from generic import *
 
-class RandomLS(Algorithm):
 
-    def __init__(self, prob, x0, options):
+class RandomLS(LocalSearchAlgorithm):
+
+    def __init__(self, prob, options):
         """ Constructeur de la super classe 
         """
-        Algorithm.__init__(self, prob, x0)
+        LocalSearchAlgorithm.__init__(self, prob, options)
    
     def get_neighbors(self):
         """ retourner les voisins de la solution courante 

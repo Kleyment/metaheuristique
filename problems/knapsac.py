@@ -88,6 +88,8 @@ class Knapsac(Problem) :
         initial_solution = BinarySolution(dim=len(self._available_items))
         if sol_type is 'random':
             initial_solution = initial_solution.random()
+            while not self.feasable(initial_solution) : 
+                initial_solution = initial_solution.random()
         return initial_solution
 
 

@@ -34,7 +34,9 @@ class LeadingOnes(BinaryFunctionProblem) :
             for j in xrange(1, i):
                 prod *= int(x[j])
             val += prod
-        return val
+
+        sol._value  = val*1.0
+        return sol._value 
            
 """
 Factory pour generer des instances de LeadingOnes

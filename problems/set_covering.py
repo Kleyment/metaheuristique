@@ -64,7 +64,7 @@ class SetCovering(Problem) :
         for i in np.where(x)[0] :
              str_subsets +="{"+ ",".join(str(e) for e in self._subsets[i]) +"}"
         
-        return "val:{} sol:{} sets:{}".format(val, str(sol), str_subsets) 
+        return "val:{} sol:{}".format(val, str(sol)) 
 
 
     def generate_initial_solution(self, sol_type='empty'):
@@ -76,8 +76,10 @@ class SetCovering(Problem) :
         initial_solution = BinarySolution(x=np.ones(len(self._subsets),
                                                   dtype=np.bool_))
         
-        #if sol_type is 'random':
-        #    initial_solution = initial_solution.random()
+        if sol_type is 'random':
+            initial_solution = initial_solution.random()
+            while not self.feasable(initial_solution) : 
+                initial_solution = initial_solution.random()
         return initial_solution
 
 

@@ -31,8 +31,8 @@ class BinVal(BinaryFunctionProblem) :
         val = 0
         for i in xrange(len(x)):
             val +=  x[i] << i
-
-        return val
+        sol._value = val*1.0
+        return sol._value
        
 """
 Factory pour generer des instances de BinVal

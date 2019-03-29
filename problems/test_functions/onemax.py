@@ -21,13 +21,15 @@ class OneMax(BinaryFunctionProblem) :
         
         Le nombre de un (vrai) dans la solution 
         """
-
+      
         if not isinstance(sol, BinarySolution):
             raise TypeError("x must be a instance of Solution")
-        
+    
         self.nb_evaluations += 1
         x = sol.solution
-        return len(np.where(x)[0])
+        val = len(np.where(x)[0])
+        sol._value = val*1.0
+        return sol._value
        
 """
 Factory pour generer des instances de OneMax

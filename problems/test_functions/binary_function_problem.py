@@ -37,7 +37,8 @@ class BinaryFunctionProblem(Problem) :
         if not isinstance(sol, BinarySolution):
             raise TypeError("x must be a instance of Solution")
         
-        self.nb_evaluations -= 1 # on ne compte cette evaluation 
+        self.nb_evaluations -= 1 # on ne compte cette evaluation
+        self.eval(sol)
         return "val:{} sol:{}".format(sol.value, str(sol))
 
     def generate_initial_solution(self, sol_type='empty'):

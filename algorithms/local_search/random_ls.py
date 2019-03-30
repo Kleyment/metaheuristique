@@ -8,20 +8,20 @@ from generic import *
 class RandomLS(LocalSearchAlgorithm):
 
     def __init__(self, prob, options):
-        """ Constructeur de la super classe 
+        """ Constructeur de la super classe
         """
         LocalSearchAlgorithm.__init__(self, prob, options)
-   
+
     def get_neighbors(self):
-        """ retourner les voisins de la solution courante 
-        """ 
+        """ retourner les voisins de la solution courante
+        """
         return self._solution.neighbors()
 
     def filter_neighbors(self, neighbors):
-        """ filtrer toutes les solutions violant les contraintes 
+        """ filtrer toutes les solutions violant les contraintes
         """
         return [ n for n in neighbors if self._problem.feasable(n) ]
-    
+
     def select_next_solution(self, candidates):
         """ Si il y des solutions (après filtrage), retourner une au hasard
         """
@@ -35,11 +35,8 @@ class RandomLS(LocalSearchAlgorithm):
 
         # ces deux lignes de servent à rien. Mais si dans un autre algorithme
         # il  faut faire un choix, les valeurs des solutions son obtenues
-        # comme suit. 
+        # comme suit.
         cur_val = self._solution.value
         new_val = self._problem.eval(new_solution)
-                
-        return True
-    
-  
 
+        return True

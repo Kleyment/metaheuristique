@@ -3,6 +3,8 @@
 import random
 from generic import *
 
+# Structure temporaire à améliorer
+alpha=0.8
 class RandomizedHillClimbingLS(LocalSearchAlgorithm):
 
     def __init__(self, prob, options):
@@ -26,20 +28,30 @@ class RandomizedHillClimbingLS(LocalSearchAlgorithm):
         best_candidat = candidates[0]
         best_solution = self._problem.eval(best_candidat)
 
-        # On parcourt toute les solutions
-        for candidat in candidates[1:]:
-            # On évalue les solutions parcourues
-            current_solution = self._problem.eval(candidat)
-            # Si la solution est meilleure que la solution courante, on sauvegarde la solution (le candidat) et sa valeur (best_solution)
-            if self.better(current_solution,best_solution):
-                best_solution = current_solution
-                best_candidat = candidat
-        return best_candidat
+
+        # On génère une probabilité entre 0 et 1 et on regarde si elle est supérieure à alpha si c'est le cas on fait du hill_climbing
+        # Sinon on prend un voisin aléatoire
+        if (random.uniform(0, 1) <= alpha) :
+            # On parcourt toute les solutions
+            for candidat in candidates[1:]:
+                # On évalue les solutions parcourues
+                current_solution = self._problem.eval(candidat)
+                # Si la solution est meilleure que la solution courante, on sauvegarde la solution (le candidat) et sa valeur (best_solution)
+                if self.better(current_solution,best_solution):
+                    best_solution = current_solution
+                    best_candidat = candidat
+                return best_candidat
+        # On sélectionne un voisin aléatoire si il existe (que l'on prend soin d'évaluer avant)
+        if len(candidates) > 0 :
+            candidate_random=random.choice(candidates)
+            self._problem.eval(candidate_random)
+            return candidate_random
+        return None
+
 
     def accept(self, new_solution) :
-        """ HillClimbingLS accepte seulement les solutions qui sont meilleures que la solution courante"""
+        """ RandomizedHillClimbingLS accepte toujours la solution"""
 
-        cur_val = self._solution.value
-        new_val = new_solution.value
-        # On prend la meilleure solution (better tient compte du fait que le problème soit minimisation ou maximisation)
-        return self.better(new_val,cur_val)
+        #cur_val = self._solution.value
+        #new_val = self._problem.eval(new_solution)
+        return True

@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
     # paramètre globaus, a modifier selon taille des problèmes
     #small - medium - large
-    probleme_size   = 'small'
+    probleme_size   = 'large'
 
     max_evaluations = 3000 # Les critère d'arrêt
     max_iterations  = 3000
@@ -197,7 +197,10 @@ if __name__ == '__main__':
     algo_list = [
         RandomLS,
         HillClimbingLS,
-        FirstImprovementHillClimbingLS
+        RandomizedHillClimbingLS,
+        FirstImprovementHillClimbingLS,
+        #SimulatedAnnealingLS,
+        #TabuLS
     ]
 
     # Générer un problème

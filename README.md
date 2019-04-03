@@ -1,5 +1,5 @@
 # Métaheuristique
-Divers implémentation simple d'algorthme de métaheuristique en python 2.
+Diverses implémentations simples d'algorithmes de métaheuristique en python 2.
 
 (Glouton, Aléatoire, Recuit Simulé, Recherche Taboue,...)
 

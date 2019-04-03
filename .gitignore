@@ -101,9 +101,6 @@ flycheck_*.el
 *.svg
 *.svgz
 
-# Portable Document Format
-*.pdf
-
 # X BitMap
 *.xbm
 

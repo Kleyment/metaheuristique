@@ -25,7 +25,7 @@ class RandomLS(LocalSearchAlgorithm):
     def select_next_solution(self, candidates):
         """ Si il y des solutions (après filtrage), retourner une au hasard
         """
-        if len(candidates) >0 :
+        if len(candidates) > 0 :
             return random.choice(candidates)
         return None
 

@@ -6,8 +6,10 @@ import random
 
 from generic import *
 
+# Structure temporaire à améliorer
+alpha=0.1
 
-class RandomPS(PopulationSearchAlgorithm):
+class OnePlusOneEA(PopulationSearchAlgorithm):
 
     def __init__ (self, prob, options) :
         """
@@ -20,6 +22,11 @@ class RandomPS(PopulationSearchAlgorithm):
         * Un dictionnaire des paramètres des algorithmes
 
         """
+
+        # La taille de la popilation est toujours 1 pour cet algorithme
+        options['mu']=1
+        options['lambda']=1
+
         PopulationSearchAlgorithm.__init__(self, prob, options)
 
 
@@ -50,9 +57,9 @@ class RandomPS(PopulationSearchAlgorithm):
         return random.choice( pop ).clone()
 
 
-    def bit_flip_mutation(self, x) :
+    def bit_uniform_mutation(self, x) :
         """
-        Mutation d'un individu. On modifie un bit aléatoire de la solution.
+        Mutation d'un individu. On modifie uniformément chaque bit avec une probabilité alpha.
 
         Entrée : une instance de la classe Solution.
 
@@ -61,8 +68,9 @@ class RandomPS(PopulationSearchAlgorithm):
         if not isinstance(x, BinarySolution) :
             raise TypeError("Algorithm only works on binary solution problems")
 
-        i = random.randint(0, len(x.solution)-1 )
-        x.solution[i] = not x.solution[i]
+        for i in xrange(len(x.solution)):
+            if (alpha > random.uniform(0, 1)) :
+                x.solution[i] = not x.solution[i]
 
         return x
 
@@ -81,13 +89,20 @@ class RandomPS(PopulationSearchAlgorithm):
         while not done :
 
             # on prend une solution
-            p = self.select_random ( parents )
+            x = self.select_random ( parents )
+            self._problem.eval(x)
 
-            # on la modifie
-            p = self.bit_flip_mutation( p )
+            # on la modifie avec une mutation uniforme et on la garde seulement si elle est meilleure
+            y = x.clone()
+            y = self.bit_uniform_mutation( y )
+            self._problem.eval(y)
 
-            # on a rajoute a la liste
-            offspring.append(p)
+            # on a rajoute a la liste la meilleure solution si elle est faisable
+            if self.better(y.value,x.value) and self._problem.feasable(y):
+                offspring.append(y)
+            else:
+                offspring.append(x)
+
 
             # on arrête si la population est remplie
             done = len(offspring) == self._lambda

@@ -8,7 +8,7 @@ from problems import *
 from misc import *
 
 
-def plot_by_evaluation(data, fname):
+def plot_by_evaluation(data, x, y, fname):
     """
     Dessine des courbes de valeurs de la solution courante vs.
     nombre évaluations. Il y a une courbe par exécution.
@@ -19,8 +19,9 @@ def plot_by_evaluation(data, fname):
 
     ax = start_figure()
     for d in data:
-        ax.plot(d[1], d[2], lw=0.3, color="0.5")
+        ax.plot(d[x], d[y], lw=0.3, color="0.5")
     finish_figure(ax, fname, 'Evaluations', 'Value')
+
 
 
 def plot_by_final_solution(data, names, fname):
@@ -49,7 +50,7 @@ def split_stat_line(line):
     """
 
     data = line.split()
-    i, e, v = 0, 0, 0
+    i, e, v, s = 0, 0, 0, 0
     for d in data :
         if d.startswith('eval') :
             e = float(d.split(':')[1])
@@ -57,7 +58,9 @@ def split_stat_line(line):
             v = float(d.split(':')[1])
         if d.startswith('iter') :
             i = float(d.split(':')[1])
-    return i,e,v
+        if d.startswith('sig') :
+            s = float(d.split(':')[1])
+    return i,e,v,s
 
 
 def run_algorithm(algo, max_iter, screen=True) :
@@ -168,7 +171,11 @@ def multiple_runs(problem, algo_class_name,  max_iter, nb_runs, alg_options):
     print "-"*80
 
     # Réaliser les courbes pour chaque exécution
-    plot_by_evaluation(iter_data, algorithm.name+'-iter.png')
+
+    plot_by_evaluation(iter_data, 1, 2, algorithm.name+'-val.png')
+    if len(iter_data[0]) > 3 :
+        plot_by_evaluation(iter_data, 1, 3, algorithm.name+'-sig.png')
+
 
     # retourner les valeur des solution final et le nom de l'algorithme
     return np.array(final_data), algorithm.name
@@ -177,8 +184,7 @@ def multiple_runs(problem, algo_class_name,  max_iter, nb_runs, alg_options):
 if __name__ == '__main__':
 
     # paramètre globaus, a modifier selon taille des problèmes
-    #small - medium - large
-    probleme_size   = 'large'
+    probleme_size   = 'small'
 
     max_evaluations = 3000 # Les critère d'arrêt
     max_iterations  = 3000
@@ -187,20 +193,18 @@ if __name__ == '__main__':
 
     # paramètre pour les algorithmes
     algo_options = {
+
         'mu' : 10,
         'lambda' : 20,
-        'Pc' : .8,
-        'Pm' : .4,
+        'sigma' : 1.0,
     }
 
     # la liste des algorithmes (le nom des classes)
     algo_list = [
         RandomLS,
-        HillClimbingLS,
-        RandomizedHillClimbingLS,
-        FirstImprovementHillClimbingLS,
-        #SimulatedAnnealingLS,
-        #TabuLS
+        MuComaLambdaGA,
+        MuPlusComaLambdaGA,
+        OnePlusOneEA
     ]
 
     # Générer un problème
@@ -211,6 +215,15 @@ if __name__ == '__main__':
     #prob = generate_onemax_instance( probleme_size, max_evaluations)
     #prob = generate_leading_ones_instance( probleme_size, max_evaluations)
     #prob = generate_binval_instance( probleme_size, max_evaluations)
+
+
+    #prob = generate_sphere_instance(probleme_size, max_evaluations)
+    #prob = generate_tablet_instance(probleme_size, max_evaluations)
+    #prob = generate_rosenbrock_instance(probleme_size, max_evaluations)
+    #prob = generate_sharp_ridge_instance(probleme_size, max_evaluations)
+
+    #prob = generate_schur_instance(probleme_size, max_evaluations)
+
 
     # pour stocker les stats
     algo_stats = []

@@ -1,31 +1,17 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import numpy as np
-import math
+import random
 
-"""
-Classe Abstraite représentant un algorithme de recherche a population
+from problem import Problem
+from solution import Solution
+from population_search_algorithm import PopulationSearchAlgorithm
 
-A chaque itération la population interne (self._pop) de taille self._mu
-est modifée et remplacée.
+class EvolutionStrategy(object):
 
-La meilleure solution trouvée est mise à jour et accessible avec l'attribut
-best_solution.
-
-Les classe concrètes doivent implanter les méthodes suivantes :
-
-make_parent_pop()
-evolve_pop(parents)
-make_new_pop(offspring)
-
-
-"""
-
-class PopulationSearchAlgorithm(object):
-
-    def __init__ (self, prob, options) :
+    def __init__(self, prob, options):
         """
-        Crée la population initiale et l'évalue
+        Algorithm de stratégie d'evolution générique
 
         Entrées :
 
@@ -33,24 +19,26 @@ class PopulationSearchAlgorithm(object):
         * Un dictionnaire des paramètres des algorithmes
 
         """
+        if not isinstance(prob, Problem):
+            raise TypeError("prob must be a instance of Problem")
 
         self._problem = prob
         self._mu = options.get('mu', 5 )
         self._lambda = options.get('lambda', 10 )
+        self._sigma = options.get('sigma', 1.0 )
 
-        # Création de la population initiale
-        self._pop = [ self._problem.generate_initial_solution(sol_type='random')
-                      for i in xrange(self._mu) ]
+        # Création de la solution intiale initiale
+        self._m = self._problem.generate_initial_solution(sol_type='random')
+        self._problem.eval(self._m )
 
-        # Evaluation de la population initiale
-        self.eval_pop(self._pop)
-        self.update_stats( self._pop )
-        self._max_ever = self.max_value
-        self._min_ever = self.min_value
+        self._best_solution = self._m.clone()
+        self.min_value = self._m.value
+        self.max_value = self._m.value
+        self._max_ever = self._m.value
+        self._min_ever = self._m.value
 
         # un critère d'arrête dépandant de l'algorithme
         self._stop = False
-
 
     @property
     def best_solution(self):
@@ -126,79 +114,6 @@ class PopulationSearchAlgorithm(object):
         else:
             pop.sort(key=lambda x: x.value)
 
-    def make_parent_pop(self):
-        """
-        Permet de selectionner selon une strategie donnée, qui parmi la
-        population courrante (self._pop) va pouvoir se reproduire.
-
-        retourne une liste de solution de self._pop de taille self._mu
-
-        """
-        raise NotImplementedError
-
-    def evolve_pop(self, parents):
-        """
-        Créer des nouvelles solution par evolution des parents. Les opérateur
-        génétique son appliqué ici.
-
-        Entrée : une liste de parents (cf.  make_parent_pop)
-        Sortie : une liste de solution enfants de taille self._lambda
-
-        """
-        raise NotImplementedError
-
-    def make_new_pop(self, offspring):
-        """
-        Constituer la nouvelle population selon une stratégie de selection
-        donnée depuis les enfants et self._pop.
-
-        Entrée : une liste de solutions enfants
-        Sortie : une lisre de solutions de taille self._mu
-
-        """
-        raise NotImplementedError
-
-    def better(self, v1, v2) :
-        """
-        En fonction du context minimisation ou maximisation
-        retourn si la valeur de x1 est meilleur que la valeur x2
-
-        Prend : deux valeurs de solution
-        Retourne :  un booléen
-        """
-
-        if self._problem.maximize and v1 >= v2:
-            return True
-        if self._problem.minimize and v1 <= v2:
-            return True
-        return False
-
-    def step(self):
-
-        # Selection des parents
-        P = self.make_parent_pop()
-
-        # évolution et création des enfants
-        O = self.evolve_pop( P )
-
-        # évaluation des enfants
-        fit = self.eval_pop( O )
-
-        # remplacement des parents
-        self._pop = self.make_new_pop ( O )
-
-        # mise a jour des statistiques
-        self.update_stats( self._pop )
-
-        return self.stop()
-
-
-    def stop(self) :
-        """
-        Un critère d'arrêt atteint  max eval ou plus a définir
-        retourne un boolean vrai si on s'arrête
-        """
-        return self._problem.no_more_evals() or self._stop
 
     def print_dist(self):
         """
@@ -218,16 +133,12 @@ class PopulationSearchAlgorithm(object):
         if _is_finite( [
                 self._max_ever,
                 self._min_ever,
-                self.max_value,
+                self.max_value, 
                 self.min_value,
                 self.ave_value ] ):
 
-            if (self._max_ever-self._min_ever != 0):
-                a = l/(self._max_ever-self._min_ever)
-                b = - (l*self._min_ever)/(self._max_ever-self._min_ever)
-            else:
-                a=0
-                b=0
+            a = l/(self._max_ever-self._min_ever)
+            b = - (l*self._min_ever)/(self._max_ever-self._min_ever)
 
             idx_max = int(a*self.max_value + b)
             idx_ave = int(a*self.ave_value + b)
@@ -240,9 +151,10 @@ class PopulationSearchAlgorithm(object):
 
     def print_step(self):
         """ retourne des infos sur l'itération  """
-        return "eval:{} val:{} max:{} min:{} [{}]".format(
+        return "eval:{} val:{} max:{} min:{} sig:{} [{}]".format(
             self._problem.nb_evaluations,
             self.ave_value, self.max_value, self.min_value,
+            self._sigma,
             self.print_dist())
 
     def print_final(self):
@@ -250,6 +162,68 @@ class PopulationSearchAlgorithm(object):
         sol_str = self._problem.print_solution(self._best_solution)
         return "Final solution: eval:{} {}".format(
             self._problem.nb_evaluations, sol_str )
+
+
+
+    def normal(self, n):
+        """
+        Echantillonne selon une loi normale (0,1) un vecteur de dimension n
+
+        Entrée : un entier la dimension
+        Sortie : une liste de de n flotants
+        """
+        return [ random.gauss(0.0, 1.0) for i in xrange(n) ]
+
+
+    def sample_solutions(self):
+        """
+        Echantillonage de lambda solutions selon la distribution courrente
+
+        Sortie : une liste de lambda solutions
+        """
+        raise NotImplementedError
+
+    def update_sigma(self, sample):
+
+        """
+        Mise à jour de pas de mutation sigma selon une règle donnée
+        """
+        raise NotImplementedError
+
+    def update_m(self, sample):
+        """
+        Mise à jour de la moyenne de la distribution
+        """
+        raise NotImplementedError
+
+
+
+    def step(self):
+
+        # Echantillonage de solutions
+        O = self.sample_solutions()
+
+        # évaluation et tri des solutions
+        fit = self.eval_pop( O )
+        self.sort_pop(O)
+
+        # Mis a jour des parammetre de ls distribution
+        self.update_m(O)
+        self.update_sigma(O)
+
+        # mise a jour des statistiques
+        self.update_stats( O )
+
+        return self.stop()
+
+
+    def stop(self) :
+        """
+        Un critère d'arrêt atteint  max eval ou plus a définir
+        retourne un boolean vrai si on s'arrête
+        """
+        return self._problem.no_more_evals() or self._stop
+
 
 
 def _is_finite(numbers):
